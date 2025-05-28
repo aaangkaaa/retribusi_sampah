@@ -1,0 +1,131 @@
+/* public/css/style.css */
+
+/* Reset default styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* public/css/style.css */
+
+/* Full-page video background styling */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1; /* Video tetap di belakang konten */
+}
+
+.video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover; /* Menutupi seluruh halaman */
+    z-index: -1;
+}
+
+/* Login box styling */
+.login-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1; /* Konten di atas video */
+}
+
+
+.login-box {
+    width: 95%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.15); /* Transparansi background */
+    box-shadow: 0 0 10px #ffcb00e5;
+    border-radius: 20px;
+    padding: 40px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.login-box:hover {
+    animation: animate 1s linear infinite;
+}
+/* @keyframes animate {
+    100% {
+        filter: hue-rotate(360deg);
+    }
+} */
+h2 {
+    margin-bottom: 20px;  
+    color: #3c3c3c;
+}
+
+.input-group {
+  position: relative;
+  margin: 30px 0;
+  border-bottom: 2px solid #fff;
+}
+
+.input-group label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #fff;
+    pointer-events: none;
+    transition: .5s;
+}
+
+.input-group input {
+    width: 320px;
+    height: 40px;
+    font-size: 16px;
+    color: #fff;
+    padding: 0 5px;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.input-group input:focus~label,
+.input-group input:valid~label {
+  top: -5px;
+}
+
+.login-button {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    background: #f3cb7ec7;
+    box-shadow: 0 0 10px #ffb300;
+    font-size: 16px;
+    color: #000;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 30px;
+    border: none;
+    outline: none;
+}
+
+.login-button:hover {
+    /* background-color: #0056b3; */
+}
