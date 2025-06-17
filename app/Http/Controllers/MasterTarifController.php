@@ -61,4 +61,17 @@ class MasterTarifController extends Controller
                 ->make(true);
         }
     }
+
+    public function delete(Request $request)
+    {
+        $id = $request->id;
+        try {
+            $tarif = $this->masterTarif->findOrFail($id);
+            // This will trigger the boot method and deleting event in the model
+            $tarif->delete();
+            return response()->json(['kode' => 1, 'message' => 'Data Tarif berhasil dihapus!']);
+        } catch (\Exception $e) {
+            return response()->json(['kode' => 0, 'message' => 'Data Tarif gagal dihapus! ' . $e->getMessage()]);
+        }
+    }
 }

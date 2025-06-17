@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>@yield('title', 'Dashboard') | Retribusi Sampah</title>
+    <title>@yield('title', 'Dashboard') | Retribusi Kebersihan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesdesign" name="author" />
@@ -22,6 +22,7 @@
     <link href="{{ asset('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/loading-animation.css') }}" rel="stylesheet" type="text/css" />
     
     <style>
         .top-right-button {
@@ -57,6 +58,12 @@
 </head>
 
 <body data-topbar="light" data-layout="horizontal">
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay visible">
+    <div class="loader"></div>
+    <div class="loading-text">Memuat Aplikasi...</div>
+</div>
 
 <div id="layout-wrapper">
     <!-- Header -->
@@ -98,5 +105,6 @@
 <script src="{{ asset('assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
 <script src="{{ asset('assets/js/pages/global.js') }}"></script>
+<script src="{{ asset('js/loading.js') }}"></script>
 </body>
 </html>

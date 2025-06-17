@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 class MasterTarif extends Model
 {
     protected $table = 'ms_tarif';
@@ -36,4 +41,20 @@ class MasterTarif extends Model
         return DB::delete("DELETE FROM ms_tarif WHERE id = ?", [$id]);
     }
 
+    // Relasi ke tr_penetapan
+    public function penetapans()
+    {
+        return $this->hasMany(PenetapanWr::class, 'tarif_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($tarif) {
+            if ($tarif->penetapans()->count() > 0) {
+                throw new \Exception("Tidak Dapat Menghapus Master Tarif Ini Karena Telah Digunakan Dalam Data Penetapan.");
+            }
+        });
+    }
 }

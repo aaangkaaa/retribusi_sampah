@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\MasterKecamatanController;
 use App\Http\Controllers\MasterKelurahanController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PimpinanKecamatanController;
+use App\Http\Controllers\DashboardController as DashboardController;
 
 // Route yang dapat diakses tanpa login
 Route::get('/', [App\Http\Controllers\LandingController::class, 'index'])->name('landing');
@@ -28,7 +30,7 @@ Route::get('logout', [AuthController::class, 'logout']);
 // Route yang memerlukan autentikasi
 Route::middleware(['auth'])->group(function () {
     Route::view('/home', 'home')->name('home');
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/cetak-pdf', [PdfController::class, 'cetak']);
 });
 
@@ -39,10 +41,12 @@ Route::middleware('auth:api')->get('/user', [AuthController::class, 'user']);
 Route::middleware('auth:api')->post('logout', [AuthController::class, 'logout']);
 
 Route::middleware(['auth'])->group(function () {
+    // Remove duplicate dashboard route from here
     Route::view('/home', 'home')->name('home');
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/cetak-pdf', [PdfController::class, 'cetak']);
     Route::get('master-tarif', [MasterTarifController::class, 'index']);
+    Route::post('master-tarif/delete', [MasterTarifController::class, 'delete']);
     Route::get('master-tarif/data', [MasterTarifController::class, 'getData']);
     Route::post('master-tarif/save-data', [MasterTarifController::class, 'save']);
     Route::view('/master-tarif', 'm-tarif')->name('master-tarif');
@@ -71,6 +75,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('master-wr/data-tarif', [MasterWrController::class, 'getDataTarif']);
     Route::get('master-wr/data-rw', [MasterWrController::class, 'getDataRw']);
     Route::get('master-wr/data-rt', [MasterWrController::class, 'getDataRt']);
+    Route::post('master-wr/delete', [MasterWrController::class, 'delete']);
+    Route::get('master-wr/cetak', [MasterWrController::class, 'cetak'])->name("master-wr.cetak");
     Route::post('master-wr/save-data', [MasterWrController::class, 'save']);
     Route::view('/master-wr', 'm-wr')->name('master-wr');
     Route::get('penetapan-wr', [PenetapanWrController::class, 'index']);
@@ -85,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('penetapan-wr/data-rt', [PenetapanWrController::class, 'getDataRt']);
     Route::post('penetapan-wr/save-data', [PenetapanWrController::class, 'save']);
     Route::get('/penetapan-wr/cetak_all', [PenetapanWrController::class, 'cetakAll'])->name('penetapan-wr.cetak_all');
+    Route::get('penetapan-wr/get-available-months', [PenetapanWrController::class, 'getAvailableMonths']);
     Route::get('master-rt', [MasterRtController::class, 'index']);
     Route::get('master-rt/data', [MasterRtController::class, 'getData']);
     Route::get('master-rt/data-kecamatan', [MasterRtController::class, 'getDataKecamatan']);
@@ -95,10 +102,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pembayaran', [PembayaranController::class, 'index']);
     Route::get('pembayaran/data', [PembayaranController::class, 'getData']);
     Route::get('pembayaran/dataDet', [PembayaranController::class, 'getDataDet']);
+    Route::get('pembayaran/dataById', [PembayaranController::class, 'dataById']);
     Route::post('pembayaran/save-data', [PembayaranController::class, 'save']);
+    Route::post('pembayaran/delete-data', [PembayaranController::class, 'delete']);
     Route::view('/pembayaran', 'pembayaran')->name('pembayaran');
     Route::get('/pembayaran/cetak_stbp', [PembayaranController::class, 'cetakStbp'])->name('pembayaran.cetak_stbp');
-    Route::get('/autocomplete-npwr', [PembayaranController::class, 'autocomplete']);
+    Route::get('pembayaran/autocomplete-npwr', [PembayaranController::class, 'autocomplete']);
     Route::get('master-user', [UserController::class, 'index'])->name('master-user');
     Route::get('master-user/data', [UserController::class, 'getData'])->name('master-user.data');
     Route::post('master-user/save', [UserController::class, 'save'])->name('master-user.save');
@@ -127,4 +136,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('pimpinan-kecamatan/save', [PimpinanKecamatanController::class, 'save'])->name('pimpinan-kecamatan.save');
     Route::get('pimpinan-kecamatan/data-byId', [PimpinanKecamatanController::class, 'getDataById'])->name('pimpinan-kecamatan.data-byId');
     Route::post('pimpinan-kecamatan/delete', [PimpinanKecamatanController::class, 'delete'])->name('pimpinan-kecamatan.delete');
+    Route::get('master-kolektor', [App\Http\Controllers\MasterKolektorController::class, 'index']);
+    Route::get('master-kolektor/data', [App\Http\Controllers\MasterKolektorController::class, 'getData']);
+    Route::get('master-kolektor/daftar-kolektor', [App\Http\Controllers\MasterKolektorController::class, 'getDataKolektor']);
+    Route::get('master-kolektor/data-kecamatan', [App\Http\Controllers\MasterKolektorController::class, 'getDataKecamatan']);
+    Route::get('master-kolektor/data-kelurahan', [App\Http\Controllers\MasterKolektorController::class, 'getDataKelurahan']);
+    Route::post('master-kolektor/save-data', [App\Http\Controllers\MasterKolektorController::class, 'save']);
+    Route::post('master-kolektor/update-status', [App\Http\Controllers\MasterKolektorController::class, 'updateStatus']);
+    Route::view('/master-kolektor', 'm-kolektor')->name('master-kolektor');
 });

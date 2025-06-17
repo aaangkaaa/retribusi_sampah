@@ -176,6 +176,14 @@
         });
         $("#grid_det_pembayaran").on("input keypress change", ".input-total", function() {
             let total = 0;
+            let row = $(this).closest("tr");
+            let tagihan = row.find("td:eq(4)").text();
+            
+            // console.log('tagihan' +tagihan);
+            
+            if(angka(tagihan) < angka($(this).val())){
+                Swal.fire('Info', 'Total pembayaran Rp. ' + $(this).val() + ' melebihi nilai tagihan sebesar Rp. ' + tagihan , 'info');
+            }
             $(".input-total").each(function() {
                 let value = angka($(this).val()) || 0;
                 total += value;
@@ -250,7 +258,7 @@
                 return $('<span title="' + data.text + '">' + data.text + '</span>');
             },
             ajax: {
-                url: '/autocomplete-npwr',
+                url: "{{ url('pembayaran/autocomplete-npwr') }}",
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -280,6 +288,7 @@
                         type: "GET",
                         data: function(d) {
                             d.wr_id = id;
+                            d.idx = document.getElementById("id").value;
                             d._token = $('meta[name="csrf-token"]').attr('content');
                         }
                     },
@@ -310,7 +319,7 @@
                                     oninput="return(currencyFormat(this,',','.',event))" 
                                     onchange="return(currencyFormat(this,',','.',event))" 
                                     onkeypress="return(currencyFormat(this,',','.',event))" 
-                                    value="0.00">`;
+                                    value="${number_format(data,2,'.',',')}">`;
                             }
                         },
                         { data: 'action', name: 'action', searchable: false }
@@ -412,6 +421,71 @@
             e.preventDefault();
             var id = $(this).data('id');
             window.open("{{ route('pembayaran.cetak_stbp') }}?id=" + id, "_blank");
+        });
+        $("#grid_pembayaran").on("click",".delete",function(e){
+            e.preventDefault();
+            var id = $(this).data('id');
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data ini akan dihapus!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url('pembayaran/delete-data') }}",
+                        type: "POST",
+                        data: {
+                            id: id,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Sukses', 'Data berhasil dihapus', 'success');
+                                $('#grid_pembayaran').DataTable().ajax.reload();
+                            } else {
+                                Swal.fire('Error', response.message || 'Terjadi kesalahan saat menghapus data', 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            let errorMessage = 'Terjadi kesalahan saat menghapus data';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            Swal.fire('Error', errorMessage, 'error');
+                        }
+                    });
+                }
+            }); 
+        });
+        $("#grid_pembayaran").on("click",".edit",function(e){
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.ajax({
+                url: "{{ url('pembayaran/dataById') }}",
+                type: "GET",
+                data: {
+                    id: id
+                },
+                success: function(response) {
+                    document.getElementById("id").value = response.id;
+                    let newOption = new Option(response.text, response.wr_id, true, true);
+                    $("#npwr").append(newOption).trigger("change");
+                    document.getElementById("tgl_pembayaran").value = response.tgl_pembayaran;
+                    document.getElementById("jumlah").value = number_format(response.jumlah,2,'.',',');
+                    document.getElementById("keterangan").value = response.keterangan;
+                    
+                    $('#grid_det_pembayaran').DataTable().columns.adjust().responsive.recalc();
+                    $("#form-input").show(1000);
+                    $(".back").show(1000);
+                    $("#front").hide(1000);
+                    $(".add").hide(1000);
+                }
+            });
         });
     });
 </script>

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Session;
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Facades\DB;
 
 class PenetapanWrController extends Controller
 {
@@ -38,6 +39,23 @@ class PenetapanWrController extends Controller
         else{
             $kec_id = '';
         }
+
+        // Cek kelurahan yang belum ada kolektornya dengan status aktif di kecamatan tersebut
+        $missingKelurahan = DB::table('ms_kelurahan')
+            ->leftJoin('kolektor', function($join) {
+                $join->on('ms_kelurahan.id', '=', 'kolektor.kel_id')
+                     ->where('kolektor.status', '=', 1);
+            })
+            ->where('ms_kelurahan.kec_id', $kec_id)
+            ->whereNull('kolektor.id')
+            ->pluck('ms_kelurahan.nama')
+            ->toArray();
+
+        if (count($missingKelurahan) > 0) {
+            $message = "Proses dibatalkan. Kelurahan berikut belum memiliki kolektor aktif: " . implode(", ", $missingKelurahan);
+            return response()->json(['kode' => 0, 'message' => $message]);
+        }
+
         $data = $this->penetapanWr->createPenetapan($kec_id,$request->tahun,$request->bulan,$request->tgl_penetapan,$request->tgl_tempo);
         if($data === true){
             $result = array('kode' => 1, "message" => "Data Penetapan berhasil disimpan!");
@@ -186,9 +204,21 @@ class PenetapanWrController extends Controller
         session_write_close();
         ini_set('memory_limit', -1);
 		ini_set('max_execution_time', -1);
+        $userData = Session::get('user');
+        if(is_array($userData)){
+            $kec_id = $userData['kec_id'];
+        }
+        else{
+            $kec_id = '';
+        }
         $data = PenetapanWr::getCetakSkrd($request->bulan,$request->tahun);
+        $datax = DB::table('pimpinan_kecamatan')
+        ->where('kec_id',$kec_id)
+        ->where('jabatan','Camat')
+        ->where('status','1')
+        ->first();
         // $data='';
-        $html = view('pdf.template', compact('data'))->render();
+        $html = view('pdf.template', compact('data','datax'))->render();
 
         return SnappyPdf::loadHTML($html)
             ->setPaper('a4')
@@ -197,4 +227,51 @@ class PenetapanWrController extends Controller
             // atau 
             ->download('laporan.pdf');
     }
-} 
+
+    public function getAvailableMonths(Request $request)
+    {
+        $year = $request->get('year', date('Y'));
+
+        // Full list of months
+        $months = [
+            ['id' => 1, 'text' => 'Januari'],
+            ['id' => 2, 'text' => 'Februari'],
+            ['id' => 3, 'text' => 'Maret'],
+            ['id' => 4, 'text' => 'April'],
+            ['id' => 5, 'text' => 'Mei'],
+            ['id' => 6, 'text' => 'Juni'],
+            ['id' => 7, 'text' => 'Juli'],
+            ['id' => 8, 'text' => 'Agustus'],
+            ['id' => 9, 'text' => 'September'],
+            ['id' => 10, 'text' => 'Oktober'],
+            ['id' => 11, 'text' => 'November'],
+            ['id' => 12, 'text' => 'Desember'],
+        ];
+        $userData = Session::get('user');
+        if(is_array($userData)){
+            $kec_id = $userData['kec_id'];
+        }
+        else{
+            $kec_id = '';
+        }
+        // Get months already in tr_penetapan for the year
+        $usedMonths = $this->penetapanWr
+            ->join("tr_wajib_retribusi", "tr_penetapan.wr_id", "=", "tr_wajib_retribusi.id")
+            ->join("ms_rt", "tr_wajib_retribusi.rt_id", "=", "ms_rt.id")
+            ->join("ms_rw", "ms_rt.rw_id", "=", "ms_rw.id")
+            ->join("ms_kelurahan", "ms_rw.kel_id", "=", "ms_kelurahan.id")
+            ->join("ms_kecamatan", "ms_kelurahan.kec_id", "=", "ms_kecamatan.id")
+            ->where('tr_penetapan.tahun', $year)
+            ->where("ms_kecamatan.id", $kec_id)
+            ->distinct()
+            ->pluck('tr_penetapan.periode')
+            ->toArray();
+
+        // Filter out used months
+        $availableMonths = array_filter($months, function ($month) use ($usedMonths) {
+            return !in_array($month['id'], $usedMonths);
+        });
+
+        return response()->json(array_values($availableMonths));
+    }
+}

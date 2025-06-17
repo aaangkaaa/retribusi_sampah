@@ -6,6 +6,50 @@
     <title>Sistem Retribusi Persampahan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Loading Animation CSS -->
+    <link href="{{ asset('css/loading-animation.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+    /* Loading Override */
+    #loading-overlay {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    .loader {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    .loader:before, .loader:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border: 4px solid #3498db;
+        border-radius: 50%;
+        opacity: 0;
+        animation: loader 2s infinite ease-in-out;
+    }
+    .loader:after {
+        animation-delay: -1s;
+    }
+    @keyframes loader {
+        0%, 100% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    .loading-text {
+        color: #3498db;
+        font-size: 1.2rem;
+        margin-top: 15px;
+    }
+    </style>
     <style>
         :root {
             --primary-color: #008B8B; /* Teal */
@@ -958,10 +1002,15 @@
     </style>
 </head>
 <body>
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loader"></div>
+    <div class="loading-text">Memuat Aplikasi...</div>
+</div>
     <!-- Hero Section with Search -->
     <section class="hero-section">
         <div class="container">
-            <a href="{{ route('login') }}" class="btn btn-outline-light login-link">Login Admin</a>
+            <!-- <a href="{{ route('login') }}" class="btn btn-outline-light login-link">Login Admin</a> -->
             
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -1318,6 +1367,37 @@
                 counterTriggered = true;
             }
         });
+    </script>
+    
+    <!-- Loading Script -->
+    <script src="{{ asset('js/loading.js') }}"></script>
+    
+    <script>
+    // Tampilkan loading overlay saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('visible');
+        }
+        
+        // Sembunyikan loading overlay setelah semuanya selesai dimuat
+        window.addEventListener('load', function() {
+            if (typeof LoadingOverlay !== 'undefined') {
+                LoadingOverlay.hide();
+            } else if (loadingOverlay) {
+                loadingOverlay.classList.remove('visible');
+                loadingOverlay.style.display = 'none';
+            }
+        });
+        
+        // Fallback: sembunyikan loading setelah 5 detik
+        setTimeout(function() {
+            if (loadingOverlay) {
+                loadingOverlay.classList.remove('visible');
+                loadingOverlay.style.display = 'none';
+            }
+        }, 5000);
+    });
     </script>
 </body>
 </html>

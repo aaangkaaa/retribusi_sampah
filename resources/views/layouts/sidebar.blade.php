@@ -15,9 +15,6 @@
         <hr class="mt-0" />
 
             <div class="px-4 py-2">
-                <div>
-                    <button class="btn btn-danger"><span class="fa fa-exit">LOGOUT</span></button>
-                </div>
                 <h6 class="mb-3">Select Custome Colors</h6>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input theme-color" type="radio" name="theme-mode"

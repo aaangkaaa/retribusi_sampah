@@ -25,15 +25,15 @@
 </head>
 <body>
 
-@foreach($data as $item)  <!-- Loop untuk menampilkan data -->
-<div class="page-break"> <!-- Memulai halaman baru untuk setiap data -->
+@foreach($data as $item) 
+<div class="page-break">  
   <table border='1' style="line-height:1.5">
     <tr>
       <td colspan="2">
         <table border='0'>
             <tr>
-                <td rowspan='2'>
-                    <img src="logo.png" alt="Logo" style="float:left; margin-right:10px;">
+                <td rowspan='3'>
+                    <img src="{{ public_path('assets/images/logo.bmp') }}" width="50" alt="Logo" style="float:left; margin-right:10px;">
                 </td>
                 <td align='center'>
                     <strong>PEMERINTAH KOTA MAKASSAR</strong><br>
@@ -79,7 +79,7 @@
     </tr>
     <tr>
       <td>TANGGAL JATUH TEMPO</td>
-      <td colspan="4">: {{format_tanggal($item->tgl_tempo)}}</td>
+      <td colspan="4">: {{format_tanggal_bulan($item->tgl_tempo)}}</td>
     </tr>
     <tr>
       <th>KODE REKENING</th>
@@ -87,7 +87,7 @@
       <th>JUMLAH (Rp)</th>
     </tr>
     <tr>
-      <td rowspan="2"></td>
+      <td rowspan="2" align='center' valign='top'>4.1.02.01.02.0001</td>
       <td colspan="3">RETRIBUSI KEBERSIHAN</td>
       <td align='right'>Rp. {{number_format($item->jumlah, 2, ',', '.')}}</td>
     </tr>
@@ -118,11 +118,20 @@
     <tr>
       <td colspan='3'></td>
       <td colspan="2" align='center'>
-        Makassar, {{format_tanggal($item->tgl_penetapan)}}<br>
-        CAMAT...<br>
-        (tanda tangan)<br>
-        NAMA LENGKAP<br>
-        NIP....................
+        <?php
+          if($datax->status_jabatan=='2'){
+            $jabatan = 'PLT '.$datax->jabatan;
+          }elseif($datax->status_jabatan=='3'){
+            $jabatan = 'PLH '.$datax->jabatan;
+          }else{
+            $jabatan = $datax->jabatan;
+          }
+        ?>
+        Makassar, {{format_tanggal_bulan($item->tgl_penetapan)}}<br>
+        <strong>{{strtoupper($jabatan)}}</strong><br>
+        <br><br><br>
+        <u>{{$datax->nama}}</u><br>
+        NIP.{{$datax->nip}}
       </td>
     </tr>
   </table>

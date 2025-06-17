@@ -32,7 +32,8 @@
                                     <th><b>NIP</b></th>
                                     <th><b>Nama</b></th>
                                     <th><b>Jabatan</b></th>
-                                    <th><b>Status</b></th>
+                                    <th><b>Status Jabatan</b></th>
+                                    <th><b>Status Aktif</b></th>
                                     <th><b>Action</b></th>
                                 </tr>
                             </thead>
@@ -46,20 +47,20 @@
                         <h4 class="card-title">Form Input Pimpinan Kecamatan</h4>
                         <form class="needs-validation" novalidate>
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="mb-3 position-relative">
                                         <label class="form-label" for="nip">NIP</label>
                                         <input type="text" class="form-control" id="nip" placeholder="NIP" required>
                                         <input type="hidden" class="form-control" id="id">
                                     </div>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <div class="mb-3 position-relative">
                                         <label class="form-label" for="nama">Nama</label>
                                         <input type="text" class="form-control text-right" id="nama" placeholder="Nama" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="mb-3 position-relative">
                                         <label class="form-label" for="jabatan">Jabatan</label>
                                         <select name="jabatan" id="jabatan" class="form-control" style="width:100%">
@@ -72,7 +73,18 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="mb-3 position-relative">
-                                        <label class="form-label">Status</label>
+                                        <label class="form-label" for="status_jabatan">Status Jabatan</label>
+                                        <select name="status_jabatan" id="status_jabatan" style='width:100%' class="form-control" required>
+                                            <option value="">--Pilih Status Jabatan--</option>
+                                            <option value="1">Definitif</option>
+                                            <option value="2">Pelaksana Tugas (PLT)</option>
+                                            <option value="3">Pelaksana Harian (PLH)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3 position-relative">
+                                        <label class="form-label">Status Aktif</label>
                                         <div class="form-check form-switch d-inline-block me-2">
                                             <input class="form-check-input " type="checkbox" id="stat">
                                             <label class="form-check-label stat-text">Tidak Aktif</label>
@@ -97,6 +109,9 @@
         $('#jabatan').select2({
             placeholder: 'Pilih Jabatan'
         });
+        $('#status_jabatan').select2({
+            placeholder: '--Pilih Status Jabatan--'
+        });
         $('#grid_pimpinan_kecamatan').DataTable({
             processing: true,
             serverSide: true,
@@ -108,21 +123,89 @@
                 { data: 'nip', name: 'nip' },
                 { data: 'nama', name: 'nama' },
                 { data: 'jabatan', name: 'jabatan' },
+                { data: 'status_jabatan', name: 'status_jabatan' },
                 { data: 'status', name: 'status' },
                 { data: 'action', name: 'action', searchable: false }
             ]
+        });
+
+        // Add delete button click handler
+        $("#grid_pimpinan_kecamatan").on("click", ".delete", function(e) {
+            e.preventDefault();
+            var id = $(this).attr('data-id');
+            var token = $('meta[name="csrf-token"]').attr('content');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "yakin ingin menghapus data ini?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ya, hapus!',
+                cancelButtonText: 'Tidak, batalkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url('pimpinan-kecamatan/delete') }}",
+                        method: 'POST',
+                        data: { id: id },
+                        headers: {
+                            'X-CSRF-TOKEN': token
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire(
+                                    'Deleted!',
+                                    response.message,
+                                    'success'
+                                );
+                                $("#grid_pimpinan_kecamatan").DataTable().ajax.reload();
+                            } else {
+                                Swal.fire(
+                                    'Gagal!',
+                                    response.message,
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire(
+                                'Error!',
+                                'An error occurred while deleting the data.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
         });
         $("#grid_pimpinan_kecamatan").on("click",".edit",function(e){
             var id = $(this).attr('data-id'); 
             var nip = $(this).attr('data-nip'); 
             var nama = $(this).attr('data-nama'); 
-            var jabatan = $(this).attr('data-jabatan'); 
-            var status = $(this).attr('data-status'); 
+            var jabatan = $(this).data('jabatan');
+            var status = $(this).data('status');
+            var status_jabatan = $(this).data('status-jabatan');
+            switch(status_jabatan) {
+                case 'Definitif':
+                    status_jabatan = 1;
+                    break;
+                case 'Pelaksana Tugas (PLT)':
+                    status_jabatan = 2;
+                    break;
+                case 'Pelaksana Harian (PLH)':
+                    status_jabatan = 3;
+                    break;
+                default:
+                    status_jabatan = 0;
+            }
             document.getElementById("id").value = id;
             document.getElementById("nip").value= nip;
             document.getElementById("nama").value = nama;
-            $("#jabatan").val(jabatan).trigger('change');
-            document.getElementById("stat").checked = status == 'Aktif';
+            $('#jabatan').val(jabatan).trigger('change');
+            $('#status_jabatan').val(status_jabatan).trigger('change');
+            $('#stat').prop('checked', status == 'Aktif');
             $(".stat-text").text(status);
             $("#form-input").show(1000); 
             $(".back").show(1000);
@@ -134,6 +217,7 @@
             document.getElementById("nip").value= "";
             document.getElementById("nama").value = "";
             $("#jabatan").val('').trigger('change');
+            $("#status_jabatan").val('').trigger('change');
             document.getElementById("stat").checked = false;
             $("#form-input").show(1000);
             $(".back").show(1000);
@@ -145,6 +229,7 @@
             document.getElementById("nip").value= "";
             document.getElementById("nama").value = "";
             $("#jabatan").val('').trigger("change")
+            $("#status_jabatan").val('').trigger("change")
             document.getElementById("stat").checked = false;
             $("#form-input").hide(1000);
             $(".back").hide(1000);
@@ -161,15 +246,13 @@
         
         $(".save").on("click", function(e){
             e.preventDefault();
-            
-            // Ambil data dari form
             var kec_id = @json(Session::get('user.kec_id'));
             var id = $("#id").val();
             var nip = $("#nip").val();
             var nama = $("#nama").val();
             var jabatan = $("#jabatan").val();
             var status = $("#stat").is(":checked") ? 1 : 0;
-            
+            var status_jabatan = $("#status_jabatan").val();
             // Validasi data
             if(nip == "") {
                 Swal.fire({
@@ -180,11 +263,29 @@
                 });
                 return false;
             }
-            
             if(nama == "") {
                 Swal.fire({
                     title: 'Error!',
                     text: 'Nama tidak boleh kosong',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+            
+            if(jabatan == "") {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Jabatan tidak boleh kosong',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+            if(status_jabatan == "") {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Status Jabatan tidak boleh kosong',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
@@ -202,6 +303,7 @@
                     nip: nip,
                     nama: nama,
                     jabatan: jabatan,
+                    status_jabatan: status_jabatan,
                     status: status
                 },
                 dataType: "json",
@@ -219,14 +321,13 @@
                         $("#nip").val("");
                         $("#nama").val("");
                         $("#jabatan").val("").trigger("change");
+                        $("#status_jabatan").val("").trigger("change");
                         $("#stat").prop("checked", false);
                         $(".stat-text").text("Tidak Aktif");
                         $("#form-input").hide(1000);
                         $(".back").hide(1000);
                         $("#front").show(1000);
                         $(".add").show(1000);
-                        
-                        // Reload DataTable
                         $('#grid_pimpinan_kecamatan').DataTable().ajax.reload();
                     } else {
                         Swal.fire({

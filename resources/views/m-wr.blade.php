@@ -18,6 +18,7 @@
                         </ol>
                     </div>
                     <button class="btn btn-danger form-control back" style="display:none;"><span class='fa fa-backward'></span>&nbsp;<b>Kembali</b></button>
+                    <button class="btn btn-danger form-control cetak" ><span class="fa fa-print"></span>&nbsp;<b>Cetak Daftar Wajib Retribusi</b></button>
                     <button class="btn btn-primary form-control add" ><span class="fa fa-plus"></span>&nbsp;<b>Tambah Data</b></button>
              </div>
         </div>
@@ -444,10 +445,63 @@
                 }
             });
             $(".add").hide(1000);
+            $(".cetak").hide(1000);
             $("#front").hide(1000);
             $("#form-input").show(1000);
             $(".back").show(1000);
-        })
+        });
+
+        // Delete button click handler
+        $("#grid_1").on("click", ".delete", function(e) {
+            e.preventDefault();
+            var id = $(this).attr('data-id');
+            var token = $('meta[name="csrf-token"]').attr('content');
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url('master-wr/delete') }}",
+                        method: 'POST',
+                        data: { id: id },
+                        headers: {
+                            'X-CSRF-TOKEN': token
+                        },
+                        success: function(response) {
+                            if (response.kode == 1) {
+                                Swal.fire(
+                                    'Terhapus!',
+                                    response.message,
+                                    'success'
+                                );
+                                $("#grid_1").DataTable().ajax.reload();
+                            } else {
+                                Swal.fire(
+                                    'Gagal!',
+                                    response.message,
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire(
+                                'Error!',
+                                'Terjadi kesalahan saat menghapus data.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        });
         
         $(".back").on("click",function(e){
             document.getElementById("id").value = "";
@@ -459,6 +513,9 @@
             $(".back").hide(1000);
             $("#front").show(1000);
             $(".add").show(1000);
+        });
+        $(".cetak").on("click",function(e){
+            window.open("{{ route('master-wr.cetak') }}", "_blank");
         });
         $(".add").on("click",function(e){
             let kecamatan = $("#kec-id").find(":selected").text();
@@ -548,6 +605,7 @@
             $(".back").show(1000);
             $("#front").hide(1000);
             $(".add").hide(1000);
+            $(".cetak").hide(1000);
         });
 
         $(".save").on("click",function(e){
@@ -555,7 +613,7 @@
             var id = document.getElementById("id").value;
             var npwr = document.getElementById("npwr").value;
             var nama = document.getElementById("nama").value;
-            var rt_id  = $("#kel-id").find(":selected").attr("value");
+            var rt_id  = $("#rt-id").find(":selected").attr("value");
             var tarif_id  = $("#tarif-id").find(":selected").attr("value");
             var status  = $("#status").find(":selected").attr("value");
             var alamat = $("#alamat").val();
@@ -594,6 +652,7 @@
                         $("#grid_1").DataTable().ajax.reload();
                         $("#front").show(1000);
                         $(".add").show(1000);
+                        $(".cetak").show(1000);
                     }
                     else{
                         var timerInterval;

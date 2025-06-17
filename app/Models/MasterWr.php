@@ -14,8 +14,15 @@ class MasterWr extends Model
 
     // Mendapatkan semua pengguna menggunakan query raw
     public static function getAllRws()
-    {
-        return DB::select("SELECT * FROM tr_wajib_retribusi");
+    {   
+        $userData = Session::get('user');
+        if(is_array($userData)){
+            $kec_id = $userData['kec_id'];
+        }
+        else{
+            $kec_id = '';
+        }
+        return DB::select("SELECT * FROM tr_wajib_retribusi WHERE kec_id = $kec_id");
     }
 
     public static function getDataKecamatan($kec_id,$search){

@@ -9,6 +9,7 @@ class Pembayaran extends Model
 {
     protected $table = 'tr_pembayaran';
     protected $fillable = [
+        'no_bukti',
         'wr_id',
         'tgl_pembayaran',
         'jumlah',
@@ -18,6 +19,7 @@ class Pembayaran extends Model
     {
         return Pembayaran::select(
             'tr_pembayaran.id',
+            'tr_pembayaran.no_bukti',
             'tr_pembayaran.wr_id',
             'a.npwr',
             'a.nama',

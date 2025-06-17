@@ -91,133 +91,185 @@
 </div>
 <!-- end row -->
 
-<script>
-    $(document).ready(function() {
-        $('#grid_1').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: "{{ url('master-tarif/data') }}",
-            columns: [
-                { data: 'id', name: 'id' ,visible: false, searchable: false},
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', searchable: false },
-                { data: 'nama', name: 'nama' },
-                { data: 'nilai', name: 'nilai' },
-                { data: 'action', name: 'action', searchable: false }
-            ],
-            columnDefs: [
-                {
-                    "targets": 3,
-                    "render": function(data, type, row) {
-                        if (type === 'display' || type === 'filter') {
-                            return number_format(data, 2, '.', ',');
+    <script>
+        $(document).ready(function() {
+            $('#grid_1').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ url('master-tarif/data') }}",
+                columns: [
+                    { data: 'id', name: 'id' ,visible: false, searchable: false},
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', searchable: false },
+                    { data: 'nama', name: 'nama' },
+                    { data: 'nilai', name: 'nilai' },
+                    { data: 'action', name: 'action', searchable: false }
+                ],
+                columnDefs: [
+                    {
+                        "targets": 3,
+                        "render": function(data, type, row) {
+                            if (type === 'display' || type === 'filter') {
+                                return number_format(data, 2, '.', ',');
+                            }
+                            return data;
                         }
-                        return data;
                     }
-                }
-            ]
-        });
+                ]
+            });
 
-        $("#grid_1").on("click",".edit",function(e){
-            var id = $(this).attr('data-id'); 
-            var nama = $(this).attr('data-nama');
-            var nilai = $(this).attr('data-nilai'); 
-            document.getElementById("id").value = id;
-            document.getElementById("nama").value= nama;
-            document.getElementById("nilai").value = number_format(nilai,2,'.',',');
-            $(".add").hide(1000);
-            $("#front").hide(1000);
-            $("#form-input").show(1000);
-            $(".back").show(1000);
-        })
-        
-        $(".back").on("click",function(e){
-            document.getElementById("id").value = "";
-            document.getElementById("nama").value= "";
-            document.getElementById("nilai").value = "0.00";
-            $("#form-input").hide(1000);
-            $(".back").hide(1000);
-            $("#front").show(1000);
-            $(".add").show(1000);
-        });
-        $(".add").on("click",function(e){
-            document.getElementById("id").value = "";
-            document.getElementById("nama").value= "";
-            document.getElementById("nilai").value = "0.00";
-            $("#form-input").show(1000);
-            $(".back").show(1000);
-            $("#front").hide(1000);
-            $(".add").hide(1000);
-        });
+            $("#grid_1").on("click",".edit",function(e){
+                var id = $(this).attr('data-id'); 
+                var nama = $(this).attr('data-nama');
+                var nilai = $(this).attr('data-nilai'); 
+                document.getElementById("id").value = id;
+                document.getElementById("nama").value= nama;
+                document.getElementById("nilai").value = number_format(nilai,2,'.',',');
+                $(".add").hide(1000);
+                $("#front").hide(1000);
+                $("#form-input").show(1000);
+                $(".back").show(1000);
+            })
+            
+            $(".back").on("click",function(e){
+                document.getElementById("id").value = "";
+                document.getElementById("nama").value= "";
+                document.getElementById("nilai").value = "0.00";
+                $("#form-input").hide(1000);
+                $(".back").hide(1000);
+                $("#front").show(1000);
+                $(".add").show(1000);
+            });
+            $(".add").on("click",function(e){
+                document.getElementById("id").value = "";
+                document.getElementById("nama").value= "";
+                document.getElementById("nilai").value = "0.00";
+                $("#form-input").show(1000);
+                $(".back").show(1000);
+                $("#front").hide(1000);
+                $(".add").hide(1000);
+            });
 
-        $(".save").on("click",function(e){
-            e.preventDefault();
-            var id = document.getElementById("id").value;
-            var nama = document.getElementById("nama").value;
-            var nilai = angka(document.getElementById("nilai").value);
-            var token = $('meta[name="csrf-token"]').attr('content');
+            $(".save").on("click",function(e){
+                e.preventDefault();
+                var id = document.getElementById("id").value;
+                var nama = document.getElementById("nama").value;
+                var nilai = angka(document.getElementById("nilai").value);
+                var token = $('meta[name="csrf-token"]').attr('content');
 
-            // Menyusun request AJAX
-            $.ajax({
-                url: "{{ url('master-tarif/save-data') }}", // URL tujuan
-                method: 'POST',
-                data: {
-                    id,nama,nilai
-                },
-                headers: {
-                    'X-CSRF-TOKEN': token // Menyertakan token di header
-                },
-                success: function(response) {
-                    console.log('Response:', response);
-                    if(response.kode == 1){
+                // Menyusun request AJAX
+                $.ajax({
+                    url: "{{ url('master-tarif/save-data') }}", // URL tujuan
+                    method: 'POST',
+                    data: {
+                        id,nama,nilai
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': token // Menyertakan token di header
+                    },
+                    success: function(response) {
+                        console.log('Response:', response);
+                        if(response.kode == 1){
+                            
+                            Swal.fire(
+                                {
+                                    title: 'Good job!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    timer: 2500,
+                                    showCancelButton: false,
+                                    showConfirmButton: false
+                                }
+                            )
+                            $("#form-input").hide(1000);
+                            $(".back").hide(1000);
+                            $("#grid_1").DataTable().ajax.reload();
+                            $("#front").show(1000);
+                            $(".add").show(1000);
+                        }
+                        else{
+                            var timerInterval;
+                            Swal.fire(
+                                {
+                                    title: 'Gagal',
+                                    text: response.message,
+                                    icon: 'error',
+                                    timer: 1000,
+                                    showConfirmButton: false, 
+                                    onBeforeOpen:function () {
+                                        Swal.showLoading()
+                                    },
+                                    onClose: function () {
+                                        clearInterval(timerInterval)
+                                    }
+                                    }).then(function (result) {
+                                    if (
+                                        // Read more about handling dismissals
+                                        result.dismiss === Swal.DismissReason.timer
+                                    ) {
+                                        console.log('I was closed by the timer')
+                                    }
+                                }
+                            );
+                        }
                         
-                        Swal.fire(
-                            {
-                                title: 'Good job!',
-                                text: response.message,
-                                icon: 'success',
-                                timer: 2500,
-                                showCancelButton: false,
-                                showConfirmButton: false
-                            }
-                        )
-                        $("#form-input").hide(1000);
-                        $(".back").hide(1000);
-                        $("#grid_1").DataTable().ajax.reload();
-                        $("#front").show(1000);
-                        $(".add").show(1000);
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
                     }
-                    else{
-                        var timerInterval;
-                        Swal.fire(
-                            {
-                                title: 'Gagal',
-                                text: response.message,
-                                icon: 'error',
-                                timer: 1000,
-                                showConfirmButton: false, 
-                                onBeforeOpen:function () {
-                                    Swal.showLoading()
-                                },
-                                onClose: function () {
-                                    clearInterval(timerInterval)
+                });
+            });
+
+            // Add delete button click handler
+            $("#grid_1").on("click", ".delete", function(e) {
+                e.preventDefault();
+                var id = $(this).attr('data-id');
+                var token = $('meta[name="csrf-token"]').attr('content');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Kamu akan menghapus data ini!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'ya, hapus!',
+                    cancelButtonText: 'Tidak, batalkan!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ url('master-tarif/delete') }}",
+                            method: 'POST',
+                            data: { id: id },
+                            headers: {
+                                'X-CSRF-TOKEN': token
+                            },
+                            success: function(response) {
+                                if (response.kode == 1) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        response.message,
+                                        'success'
+                                    );
+                                    $("#grid_1").DataTable().ajax.reload();
+                                } else {
+                                    Swal.fire(
+                                        'Failed!',
+                                        response.message,
+                                        'error'
+                                    );
                                 }
-                                }).then(function (result) {
-                                if (
-                                    // Read more about handling dismissals
-                                    result.dismiss === Swal.DismissReason.timer
-                                ) {
-                                    console.log('I was closed by the timer')
-                                }
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred while deleting the data.',
+                                    'error'
+                                );
                             }
-                        );
+                        });
                     }
-                    
-                },
-                error: function(error) {
-                    console.error('Error:', error);
-                }
+                });
             });
         });
-    });
-</script>
+    </script>
 @endsection

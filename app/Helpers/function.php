@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Str;
+use App\Models\MasterKecamatan;
 
 if (!function_exists('generate_uuid')) {
     function generate_uuid()
@@ -48,6 +49,15 @@ if (!function_exists('format_tanggal')) {
             return $exp[2] . '-' . $exp[1] . '-' . $exp[0];
         }
         return $tanggal;
+    }
+}
+
+if (!function_exists('header_nama_kecamatan')) {
+    function header_nama_kecamatan($kec_id)
+    {
+        $kecamatan = MasterKecamatan::find($kec_id);
+        if (!$kecamatan) return ''; 
+        return $kecamatan[0]->nama;
     }
 }
 

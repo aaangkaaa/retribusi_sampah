@@ -28,13 +28,13 @@ class MasterWrController extends Controller
         if($request->id == ''){
             // Cek NPWR unik
             $npwr = $request->npwr;
-            $base = substr($npwr, 0, -4);
-            $last4 = (int)substr($npwr, -4);
+            $base = substr($npwr, 0, -3);
+            $last3 = (int)substr($npwr, -3);
             $exists = DB::table('tr_wajib_retribusi')->where('npwr', $npwr)->exists();
             $npwr_baru = null;
             while ($exists) {
-                $last4++;
-                $npwr = $base . str_pad($last4, 4, '0', STR_PAD_LEFT);
+                $last3++;
+                $npwr = $base . str_pad($last3, 3, '0', STR_PAD_LEFT);
                 $exists = DB::table('tr_wajib_retribusi')->where('npwr', $npwr)->exists();
                 $npwr_baru = $npwr;
             }
@@ -83,6 +83,30 @@ class MasterWrController extends Controller
                 })
                 ->rawColumns(['action'])
                 ->make(true);
+        }
+    }
+    public function delete(Request $request)
+    {
+        $id = $request->input('id');
+        // Check if wr_id is referenced in tr_penetapan
+        $exists = DB::table('tr_penetapan')->where('wr_id', $id)->exists();
+        if ($exists) {
+            return response()->json([
+                'kode' => 0,
+                'message' => 'Data tidak bisa dihapus karena sudah ada di tr_penetapan.'
+            ]);
+        }
+        $deleted = $this->masterWr->deleteUser($id);
+        if ($deleted) {
+            return response()->json([
+                'kode' => 1,
+                'message' => 'Data berhasil dihapus.'
+            ]);
+        } else {
+            return response()->json([
+                'kode' => 0,
+                'message' => 'Data gagal dihapus.'
+            ]);
         }
     }
     public function getDataKecamatan(Request $request){
@@ -188,5 +212,26 @@ class MasterWrController extends Controller
         ->join('ms_tarif', 'tr_wajib_retribusi.tarif_id', '=', 'ms_tarif.id')
         ->where("tr_wajib_retribusi.id",$id)->get();
         return response()->json($data);
+    }
+    
+    public function cetakStbp(Request $request)
+    {
+        session_write_close();
+        ini_set('memory_limit', -1);
+		ini_set('max_execution_time', -1);
+        $userData = Session::get('user');
+        if(is_array($userData)){
+            $kec_id = $userData['kec_id'];
+        }
+        else{
+            $kec_id = '';
+        }
+        $data = MasterWr::getAllRws();
+        $html = view('pdf.wajib_retribusi', compact('data'))->render();
+
+        return SnappyPdf::loadHTML($html)
+            ->setPaper('a4')
+            ->setOption('margin-top', 10)
+            ->inline('stbp.pdf'); // atau ->download('stbp.pdf');
     }
 } 

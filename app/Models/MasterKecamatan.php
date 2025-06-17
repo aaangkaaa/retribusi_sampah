@@ -17,6 +17,10 @@ class MasterKecamatan extends Model
     {
         return DB::select("SELECT * FROM ms_kecamatan");
     }
+    public static function find($id)
+    {
+        return DB::select("SELECT * FROM ms_kecamatan WHERE id = ?",[$id]);
+    }
     public static function getKecamatanById($id)
     {
         return DB::select("SELECT nama FROM ms_kecamatan WHERE id = ?",[$id]);

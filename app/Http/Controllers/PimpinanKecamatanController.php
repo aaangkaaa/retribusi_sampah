@@ -30,6 +30,7 @@ class PimpinanKecamatanController extends Controller
             'pimpinan_kecamatan.nip',
             'pimpinan_kecamatan.nama',
             'pimpinan_kecamatan.jabatan',
+            DB::raw("CASE when status_jabatan = '1' then 'Definitif' when status_jabatan = '2' then 'Pelaksana Tugas (PLT)' when status_jabatan = '3' then 'Pelaksana Harian (PLH)' end as status_jabatan"),
             DB::raw("IF(pimpinan_kecamatan.status='1','Aktif','Tidak Aktif') as status")
         )
         ->join('ms_kecamatan', 'pimpinan_kecamatan.kec_id', '=', 'ms_kecamatan.id')
@@ -37,7 +38,7 @@ class PimpinanKecamatanController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){
-                return '<button class="btn btn-sm btn-primary edit" data-id="'.$row->id.'" data-nip="'.$row->nip.'" data-nama="'.$row->nama.'" data-jabatan="'.$row->jabatan.'" data-status="'.$row->status.'">Edit</button>'.
+                return '<button class="btn btn-sm btn-primary edit" data-id="'.$row->id.'" data-nip="'.$row->nip.'" data-nama="'.$row->nama.'" data-jabatan="'.$row->jabatan.'" data-status="'.$row->status.'" data-status-jabatan="'.$row->status_jabatan.'">Edit</button>'.
                 '<button class="btn btn-sm btn-danger delete" data-id="'.$row->id.'">Delete</button>';
             })
             ->rawColumns(['action'])
@@ -46,10 +47,11 @@ class PimpinanKecamatanController extends Controller
 
     public function save(Request $request)
     {
-        $data = $request->only(['id', 'kec_id', 'nip', 'nama', 'jabatan', 'status']);
+        $data = $request->only(['id', 'kec_id', 'nip', 'nama', 'jabatan', 'status', 'status_jabatan']);
         if (isset($data['status']) && $data['status'] == 1) {
             PimpinanKecamatan::where('kec_id', $data['kec_id'])
                 ->where('id', '!=', $data['id'] ?? 0)
+                ->where('jabatan', $data['jabatan'])
                 ->update(['status' => 0]);
         }
         if (!empty($data['id'])) {
@@ -67,11 +69,13 @@ class PimpinanKecamatanController extends Controller
     public function delete(Request $request)
     {
         $id = $request->get('id');
-        $pimpinan_kecamatan = PimpinanKecamatan::find($id);
-        if ($pimpinan_kecamatan) {
+        try {
+            $pimpinan_kecamatan = PimpinanKecamatan::findOrFail($id);
+            // This will trigger the boot method and deleting event in the model
             $pimpinan_kecamatan->delete();
             return response()->json(['status' => 'success', 'message' => 'Data berhasil dihapus']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Data gagal dihapus: ' . $e->getMessage()]);
         }
-        return response()->json(['status' => 'error', 'message' => 'Data gagal dihapus']);
     }
 } 

@@ -35,6 +35,10 @@ class MenuController extends Controller
     public function save(Request $request)
     {
         if($request->id == '') {
+            Menu::where('parent_id', $request->parent_id)
+                ->where('urutan', '>=', $request->urutan)
+                ->increment('urutan');
+
             $menu = new Menu();
             $menu->nama = $request->nama;
             $menu->icon = $request->icon;
@@ -48,6 +52,11 @@ class MenuController extends Controller
             }
             return response()->json(['kode' => 0, 'message' => 'Data menu gagal disimpan!']);
         } else {
+            Menu::where('parent_id', $request->parent_id)
+                ->where('urutan', '>=', $request->urutan)
+                ->where('id', '!=', $request->id)
+                ->increment('urutan');
+
             $menu = Menu::find($request->id);
             $menu->nama = $request->nama;
             $menu->icon = $request->icon;
@@ -67,6 +76,12 @@ class MenuController extends Controller
     {
         $id = $request->get('id');
         $data = Menu::find($id);
+        if ($data && $data->parent_id) {
+            $parent = Menu::find($data->parent_id);
+            $data->parent_nama = $parent ? $parent->nama : null;
+        } else {
+            $data->parent_nama = null;
+        }
         return response()->json($data);
     }
 
@@ -84,7 +99,17 @@ class MenuController extends Controller
     public function getParentMenu()
     {
         $data = Menu::where('parent_id', null)->get();
-        return response()->json($data);
+
+        // Ubah data agar sesuai format Select2 (id, text)
+        $formattedData = $data->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' => $item->nama,
+                'icon' => $item->icon,
+            ];
+        });
+
+        return response()->json($formattedData);
     }
 
     public function saveUserMenu(Request $request)

@@ -124,7 +124,6 @@ $(document).ready(function() {
         ]
     });
 
-    // Load Parent Menu
     $('#parent-id').select2({
         placeholder: 'Pilih Parent Menu',
         ajax: {
@@ -197,11 +196,15 @@ $(document).ready(function() {
             urutan: $('#urutan').val(),
             is_active: $('#status').val()
         };
+        var token = $('meta[name="csrf-token"]').attr('content'); 
 
         $.ajax({
             url: "{{ url('master-menu/save') }}",
             type: "POST",
             data: data,
+            headers: {
+                'X-CSRF-TOKEN': token // Menyertakan token di header
+            },
             success: function(response) {
                 if(response.kode == 1) {
                     Swal.fire({

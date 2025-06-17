@@ -227,10 +227,42 @@
         $(".next").hide();
         
         $('.bulan').select2({
-            placeholder: 'Pilih Bulan'
+            placeholder: 'Pilih Bulan',
+            allowClear: true
         });
         $('.tahun').select2({
             placeholder: 'Pilih Tahun'
+        });
+
+        // For #bulan2, load options only when #tahun2 is selected
+        $('#bulan2').select2({
+            placeholder: 'Pilih Bulan',
+            ajax: {
+                url: '{{ url("penetapan-wr/get-available-months") }}',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        year: $('#tahun2').val()
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: false
+            }
+        });
+
+        // Clear #bulan2 options if #tahun2 is not selected
+        $('#tahun2').on('change', function() {
+            var tahunVal = $(this).val();
+            if (!tahunVal) {
+                $('#bulan2').empty().trigger('change');
+            } else {
+                $('#bulan2').val(null).trigger('change');
+            }
         });
         $('.datepicker').datepicker({
             format: 'yyyy-mm-dd',
@@ -309,16 +341,7 @@
                     cache: false
                 }
             });
-        })
-        
-        $("#bulan").on('select2:select',function(e){
-            console.log("periodex :"+this.value);
-            table.ajax.url("{{ url('penetapan-wr/data') }}?" + $.param({
-                bulan: this.value
-            })).load();
-            table.ajax.reload(null, false);
-        })
-
+        });
         table = $('#grid_1').DataTable({
             columns: [
                 { data: 'id', name: 'id' ,visible: false, searchable: false},

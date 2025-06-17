@@ -73,10 +73,10 @@ class PenetapanWr extends Model
             SET @no_seri=0,@kel_id=0;
         ");
         return DB::statement("
-            INSERT INTO tr_penetapan (wr_id,tarif_id,periode,tahun,tgl_penetapan,tgl_tempo,jumlah,status,created_at,updated_at,no_seri)
-            SELECT wr_id,tarif_id,periode,tahun,tgl_penetapan,tgl_tempo,jumlah,status,created_at,updated_at,no_seri
+            INSERT INTO tr_penetapan (kolektor_id,pimpinan_id,wr_id,tarif_id,periode,tahun,tgl_penetapan,tgl_tempo,jumlah,status,created_at,updated_at,no_seri)
+            SELECT kolektor_id,pimpinan_id,wr_id,tarif_id,periode,tahun,tgl_penetapan,tgl_tempo,jumlah,status,created_at,updated_at,no_seri
             FROM(
-                SELECT a.id AS wr_id,
+                SELECT g.id AS kolektor_id,h.id AS pimpinan_id,a.id AS wr_id,
                     a.tarif_id,
                     '$bulan' AS periode,
                     '$tahun' AS tahun,
@@ -87,7 +87,7 @@ class PenetapanWr extends Model
                     NOW() AS created_at,
                     NOW() AS updated_at,
                     -- Mengambil nomor seri + 1 dari subquery yang menghitung MAX(no_seri) per kelurahan
-                    IF(@kel_id<>d.id,CONCAT(d.singkatan,@no_seri:=COALESCE(b.max_seri + 1, 1)),CONCAT(d.singkatan,@no_seri:=@no_seri+1)) AS no_seri,
+                    IF(@kel_id<>d.id,CONCAT(d.singkatan,@no_seri:=COALESCE(f.max_seri + 1, 1)),CONCAT(d.singkatan,@no_seri:=@no_seri+1)) AS no_seri,
                     @kel_id:=d.id
                 FROM tr_wajib_retribusi a
                 LEFT JOIN ms_rt b ON a.rt_id = b.id
@@ -103,7 +103,9 @@ class PenetapanWr extends Model
                     LEFT JOIN ms_kelurahan e ON d.kel_id=e.id
                     WHERE a.tahun = '$tahun'
                     GROUP BY d.kel_id 
-                ) b ON d.id = b.kel_id
+                )  f ON d.id = f.kel_id
+                LEFT JOIN kolektor g ON d.id=g.kel_id AND g.status='1'
+                LEFT JOIN pimpinan_kecamatan h ON e.id=h.kec_id AND h.status='1' AND h.jabatan='Camat'
                 WHERE e.id = $kec_id
                 ORDER BY npwr
             )a;

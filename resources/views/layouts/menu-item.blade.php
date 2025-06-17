@@ -4,6 +4,11 @@
     echo '<!-- MENU DEBUG: ' . json_encode($menus) . ' -->';
 @endphp
 
+<li class="nav-item">
+    <a class="nav-link" href="{{ url('dashboard') }}" id="menu-dashboard">
+        <i class="fa fa-home"></i> Dashboard
+    </a>
+</li> 
 @foreach($menus as $menu)
     @php 
         $hasChildren = isset($menu->children) && $menu->children->count() > 0;

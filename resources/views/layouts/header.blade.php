@@ -4,7 +4,7 @@
             <div class="float-start">
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
-                    <a href="index.html" class="logo logo-dark">
+                    <a href="{{ url('dashboard') }}" class="logo logo-dark">
                         <span class="logo-sm" style='font-size:24px'>
                             <img src="{{ asset('assets/images/Simlurah Icon Black.svg') }}" alt="" height="22">
                         </span>
@@ -13,7 +13,7 @@
                         </span>
                     </a>
 
-                    <a href="index.html" class="logo logo-light">
+                    <a href="{{ url('dashboard') }}" class="logo logo-light">
                         <span class="logo-sm">
                             <img src="{{ asset('assets/images/Simlurah Icon White.svg') }}" alt="" height="22">
                         </span>
@@ -74,7 +74,7 @@
 
 
 
-                <div class="dropdown d-inline-block ms-1">
+                <!-- <div class="dropdown d-inline-block ms-1">
                     <button type="button" class="btn header-item noti-icon waves-effect" id="page-header-notifications-dropdown"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="ti-bell"></i>
@@ -186,7 +186,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="dropdown d-inline-block">
                     <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
@@ -199,13 +199,13 @@
                         <a class="dropdown-item" href="#"><i
                                 class="mdi mdi-account-circle font-size-17 text-muted align-middle me-1"></i>
                             Profile</a>
-                        <a class="dropdown-item" href="#"><i
+                        <!-- <a class="dropdown-item" href="#"><i
                                 class="mdi mdi-wallet font-size-17 text-muted align-middle me-1"></i> My
                             Wallet</a>
                             <a class="dropdown-item d-flex align-items-center" href="#"><i class="mdi mdi-cog font-size-17 text-muted align-middle me-1"></i> Settings<span class="badge bg-success ms-auto">11</span></a>
                         <a class="dropdown-item" href="#"><i
                                 class="mdi mdi-lock-open-outline font-size-17 text-muted align-middle me-1"></i>
-                            Lock screen</a>
+                            Lock screen</a> -->
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="#"><i
                                 class="mdi mdi-power font-size-17 text-muted align-middle me-1 text-danger"></i>
@@ -213,11 +213,11 @@
                     </div>
                 </div>
 
-                <div class="dropdown d-inline-block">
+                <!-- <div class="dropdown d-inline-block">
                     <button type="button" class="btn header-item noti-icon right-bar-toggle waves-effect">
                         <i class="mdi mdi-spin mdi-cog"></i>
                     </button>
-                </div>
+                </div> -->
 
             </div>
         </div>
@@ -228,26 +228,30 @@
             <div class="container-fluid">
                 <!-- start page title -->
                 <div class="row">
-                    <div class="col-sm-6">
+                    <div class="col-sm-9">
                         <div class="page-title-box">
-                            <h1 style="color:white">Retribusi Sampah</h1>
-                            {{-- <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript: void(0);">Lexa</a></li>
-                                <li class="breadcrumb-item"><a href="javascript: void(0);">Horizontal</a></li>
-                                <li class="breadcrumb-item active">Horizontal</li>
-                            </ol> --}}
+                            <?php
+                                $userData = Session::get('user');
+                                if(is_array($userData)){
+                                    $kec_id = $userData['kec_id'];
+                                }
+                                else{
+                                    $kec_id = '';
+                                }
+                            ?>
+                            <h2 style="color:white">Retribusi Kebersihan | {{header_nama_kecamatan($kec_id)}}</h2>
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-3">
                         <div class="state-information d-none d-sm-block">
                             <div class="state-graph float-end">
                                 <div id="header-chart-1" data-colors='["--bs-primary"]'></div>
                                 <!-- <div class="info">Balance $ 2,317</div> -->
                             </div>
-                            <div class="state-graph">
+                            <!-- <div class="state-graph">
                                 <div id="header-chart-2" data-colors='["--bs-info"]'></div>
-                                <!-- <div class="info">Item Sold 1,230</div> -->
-                            </div>
+                                <div class="info">Item Sold 1,230</div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

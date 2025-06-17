@@ -12,10 +12,8 @@ use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
-    // Registrasi Pengguna Baru
     public function register(Request $request)
     {
-        // Validasi input pengguna
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -29,7 +27,6 @@ class AuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Buat pengguna baru
         $user = User::create([
             'name' => $request->username,
             'email' => $request->email,
@@ -39,16 +36,13 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Membuat token untuk pengguna yang baru saja dibuat
         $token = $user->createToken('MyApp')->accessToken;
        
-        return response()->json(['token' => $token], 200);  // Kirimkan token sebagai respons
+        return response()->json(['token' => $token], 200);  
     }
 
-    // Login Pengguna
     public function login(Request $request)
     {
-        // Validasi input pengguna
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string',
@@ -58,10 +52,8 @@ class AuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Verifikasi kredensial
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
-            // Membuat token untuk pengguna yang berhasil login
             $token = $user->createToken('MyApp')->accessToken;
             $userData = [
                 'id' => $user->id,
@@ -74,31 +66,26 @@ class AuthController extends Controller
             ];
             Session::put('user', $userData); 
 
-            return response()->json(['token' => $token,'kode' => 1], 200);  // Kirimkan token sebagai respons
+            return response()->json(['token' => $token,'kode' => 1], 200); 
         }
 
         return response()->json(['errors' => ['email' => 'Invalid credentials']], 401);
     }
 
-    // Logout Pengguna
     public function logout(Request $request)
     {
-        // Untuk web guard (session)
         \Auth::logout();
 
-        // Untuk API guard (token, Passport)
         if ($request->user() && method_exists($request->user(), 'token')) {
             $request->user()->token()->revoke();
         }
 
-        // Destroy session
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
 
-    // Mengambil Data Pengguna
     public function user(Request $request)
     {
         return response()->json($request->user());

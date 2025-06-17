@@ -74,14 +74,14 @@
                         <td class="no-border" valign="top" colspan="4">
                             Bendahara Penerimaan<br>
                             Telah menerima uang sebesar Rp. {{ number_format($data->jumlah, 2, ',', '.') }}<br>
-                            ( <i>{{ terbilang($data->jumlah) }} rupiah</i> )
+                            (dengan huruf <i>{{ terbilang($data->jumlah) }} rupiah</i>)
                         </td>
                     </tr>
                     
                     <!-- Payer Info -->
                     <tr class="no-border">
                         <td class="no-border" valign="top" style="width: 5%;">b)</td>
-                        <td class="no-border" valign="top" style="width: 200px;">Dari Nama</td>
+                        <td class="no-border" valign="top" style="width: 15%;">Dari Nama</td>
                         <td class="no-border" valign="top" style="width: 3%;">:</td>
                         <td class="no-border" valign="top" colspan="2">{{ $data->nama }}</td>
                     </tr>
